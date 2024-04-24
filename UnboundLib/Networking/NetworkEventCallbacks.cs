@@ -2,32 +2,42 @@
 using System.Collections.Generic;
 using System.Linq;
 using UnboundLib.GameModes;
+using Networking = Unbound.Networking;
+using Gamemodes = Unbound.Gamemodes;
+using static UnboundLib.Networking.Utils.NetworkEventCallbacks;
 
 namespace UnboundLib
 {
     public class NetworkEventCallbacks : MonoBehaviourPunCallbacks
     {
-        public delegate void NetworkEvent();
-        public event NetworkEvent OnJoinedRoomEvent, OnLeftRoomEvent;
+        public event NetworkEvent OnJoinedRoomEvent {
+            add => Networking.Utils.NetworkEventCallbacks.OnJoinedRoomEvent += value;
+            remove => Networking.Utils.NetworkEventCallbacks.OnJoinedRoomEvent -= value;
+        }
+        public event NetworkEvent OnLeftRoomEvent {
+            add => Networking.Utils.NetworkEventCallbacks.OnLeftRoomEvent += value;
+            remove => Networking.Utils.NetworkEventCallbacks.OnLeftRoomEvent -= value; 
+        }
 
         public override void OnJoinedRoom()
         {
-            OnJoinedRoomEvent?.Invoke();
+            typeof(Networking.Utils.NetworkEventCallbacks)
+                .GetMethod("OnJoinedRoom", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
+                .Invoke(this, null);
         }
 
         public override void OnLeftRoom()
         {
-            OnLeftRoomEvent?.Invoke();
+            typeof(Networking.Utils.NetworkEventCallbacks)
+                .GetMethod("OnJoinedRoom", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
+                .Invoke(this, null);
         }
 
         public override void OnPlayerLeftRoom(Photon.Realtime.Player otherPlayer)
         {
-            List<Player> disconnected = PlayerManager.instance.players.Where(p => p.data.view.ControllerActorNr == otherPlayer.ActorNumber).ToList();
-
-            foreach (Player player in disconnected)
-            {
-                GameModeManager.CurrentHandler.PlayerLeft(player);
-            }
+            typeof(Networking.Utils.NetworkEventCallbacks)
+                .GetMethod("OnPlayerLeftRoom", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
+                .Invoke(this, new object[] { otherPlayer });
         }
     }
 }

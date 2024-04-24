@@ -6,6 +6,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using UnboundLib.Networking;
+using static UnboundLib.Networking.NetworkingManager;
+using Networking = Unbound.Networking;
 
 namespace UnboundLib
 {
@@ -28,32 +30,18 @@ namespace UnboundLib
             Reliability = false
         };
 
-        public delegate void PhotonEvent(object[] objects);
         private static Dictionary<string, PhotonEvent> events = new Dictionary<string, PhotonEvent>();
         private static Dictionary<Tuple<Type, string>, MethodInfo> rpcMethodCache = new Dictionary<Tuple<Type, string>, MethodInfo>();
 
         private static byte ModEventCode = 69;
 
-        static NetworkingManager()
-        {
-            PhotonNetwork.NetworkingClient.EventReceived += OnEvent;
-        }
-
         public static void RegisterEvent(string eventName, PhotonEvent handler)
         {
-            if (events.ContainsKey(eventName))
-            {
-                throw new Exception($"An event handler is already registered with the event name: {eventName}");
-            }
-
-            events.Add(eventName, handler);
+            Networking.NetworkingManager.RegisterEvent(eventName, handler);
         }
 
         public static void RaiseEvent(string eventName, RaiseEventOptions options, params object[] data) {
-            if (data == null) data = Array.Empty<object>();
-            var allData = new List<object> { eventName };
-            allData.AddRange(data);
-            PhotonNetwork.RaiseEvent(ModEventCode, allData.ToArray(), options, reliableSendOptions);
+            Networking.NetworkingManager.RaiseEvent(eventName, options, data);
         }
 
         public static void RaiseEvent(string eventName, params object[] data)
@@ -68,20 +56,7 @@ namespace UnboundLib
 
         public static void RPC(Type targetType, string methodName, RaiseEventOptions options, SendOptions sendOptions, params object[] data)
         {
-            if (data == null) data = Array.Empty<object>();
-
-            if (PhotonNetwork.OfflineMode || PhotonNetwork.CurrentRoom == null) {
-                var methodInfo = GetRPCMethod(targetType, methodName);
-                if (methodInfo != null)
-                {
-                    methodInfo.Invoke(null, data.ToArray());
-                }
-                return;
-            }
-
-            var allData = new List<object> { targetType.AssemblyQualifiedName, methodName };
-            allData.AddRange(data);
-            PhotonNetwork.RaiseEvent(ModEventCode, allData.ToArray(), options, sendOptions);
+            Networking.NetworkingManager.RPC(targetType, methodName, options, sendOptions, data);
         }
 
         public static void RPC(Type targetType, string methodName, RaiseEventOptions options, params object[] data)
@@ -109,63 +84,12 @@ namespace UnboundLib
 
         public static void OnEvent(EventData photonEvent)
         {
-            if (photonEvent.Code != ModEventCode) return;
-
-            object[] data = null;
-
-            try
-            {
-                data = (object[])photonEvent.CustomData;
-            }
-            catch (Exception e)
-            {
-                Debug.LogError(e.ToString());
-            }
-
-            try
-            {
-                if (data == null) return;
-                var type = Type.GetType((string) data[0]);
-                if (type != null)
-                {
-                    var methodInfo = GetRPCMethod(type, (string) data[1]);
-                    if (methodInfo != null)
-                    {
-                        methodInfo.Invoke(null, data.Skip(2).ToArray());
-                    }
-                }
-                else if (events.TryGetValue((string) data[0], out PhotonEvent handler))
-                {
-                    handler?.Invoke(data.Skip(1).ToArray());
-                }
-            }
-            catch (Exception e)
-            {
-                Debug.LogError("Network Error: \n" + e.ToString());
-            }
+            Networking.NetworkingManager.OnEvent(photonEvent);
         }
 
         private static MethodInfo GetRPCMethod(Type type, string methodName) {
-            var key = new Tuple<Type, string>(type, methodName);
-
-            if (rpcMethodCache.ContainsKey(key)) return rpcMethodCache[key];
-            var methodInfo = (from m in type.GetMethods(BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static | BindingFlags.FlattenHierarchy)
-                let attr = m.GetCustomAttribute<UnboundRPC>()
-                where attr != null
-                let name = attr.EventID ?? m.Name
-                where methodName == name
-                select m).FirstOrDefault();
-            if (methodInfo == null)
-            {
-                throw new Exception($"There is no method '{type.FullName}#{methodName}' found");
-            }
-            else if (!methodInfo.IsStatic)
-            {
-                throw new Exception($"UnboundRPC methods must be static! Correct this for method '{type.FullName}#{methodInfo.Name}'");
-            }
-            rpcMethodCache.Add(key, methodInfo);
-
-            return rpcMethodCache[key];
+            MethodInfo GetRPCMethodMethod = typeof(NetworkingManager).GetMethod("GetRPCMethod", BindingFlags.NonPublic | BindingFlags.Static);
+            return (MethodInfo)GetRPCMethodMethod.Invoke(null, new object[] { type, methodName });
         }
     }
 }
