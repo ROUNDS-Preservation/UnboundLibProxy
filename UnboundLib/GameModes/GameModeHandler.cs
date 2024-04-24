@@ -2,11 +2,13 @@
 using System.Collections.Generic;
 using System.Collections;
 using System.Linq;
+using Gamemodes = Unbound.Gamemodes;
+using Unbound.Gamemodes;
 
 namespace UnboundLib.GameModes
 {
     /// <inheritdoc/>
-    public abstract class GameModeHandler<T> : IGameModeHandler<T> where T : MonoBehaviour
+    public abstract class GameModeHandler<T> : Gamemodes.IGameModeHandler<T> where T : MonoBehaviour
     {
         public T GameMode {
             get
@@ -15,7 +17,7 @@ namespace UnboundLib.GameModes
             }
         }
 
-        MonoBehaviour IGameModeHandler.GameMode
+        MonoBehaviour Gamemodes.IGameModeHandler.GameMode
         {
             get
             {
@@ -27,7 +29,7 @@ namespace UnboundLib.GameModes
         public abstract string Name { get; }
         public virtual bool OnlineOnly => false;
         public abstract bool AllowTeams { get; }
-        public virtual UISettings UISettings => new UISettings();
+        public virtual Gamemodes.UISettings UISettings => new Gamemodes.UISettings();
 
         // Used to find the correct game mode from scene
         internal readonly string gameModeId;
@@ -154,6 +156,16 @@ namespace UnboundLib.GameModes
         public virtual int[] GetPointWinners()
         {
             return new int[] { };
+        }
+
+        Gamemodes.TeamScore IGameModeHandler.GetTeamScore(int teamID)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public void SetTeamScore(int teamID, Gamemodes.TeamScore score)
+        {
+            throw new System.NotImplementedException();
         }
     }
 }
