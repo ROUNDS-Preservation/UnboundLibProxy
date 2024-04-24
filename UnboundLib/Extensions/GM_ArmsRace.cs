@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Runtime.CompilerServices;
-using UnityEngine;
+using Core = Unbound.Core;
 
 namespace UnboundLib.Extensions
 {
+    // TODO: figure out what to do with this
     [Serializable]
     public class GM_ArmsRaceAdditionalData
     {
@@ -14,28 +15,6 @@ namespace UnboundLib.Extensions
         {
             previousRoundWinners = new int[] { };
             previousPointWinners = new int[] { };
-        }
-    }
-    public static class GM_ArmsRaceExtensions
-    {
-        public static readonly ConditionalWeakTable<GM_ArmsRace, GM_ArmsRaceAdditionalData> data =
-            new ConditionalWeakTable<GM_ArmsRace, GM_ArmsRaceAdditionalData>();
-
-        public static GM_ArmsRaceAdditionalData GetAdditionalData(this GM_ArmsRace instance)
-        {
-            return data.GetOrCreateValue(instance);
-        }
-
-        public static void AddData(this GM_ArmsRace instance, GM_ArmsRaceAdditionalData value)
-        {
-            try
-            {
-                data.Add(instance, value);
-            }
-            catch (Exception)
-            {
-                // ignored
-            }
         }
     }
 }
