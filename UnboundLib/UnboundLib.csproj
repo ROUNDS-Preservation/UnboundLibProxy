@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
@@ -66,6 +66,21 @@
     </Reference>
     <Reference Include="MMHOOK_Assembly-CSharp">
       <HintPath>..\Assemblies\MMHOOK_Assembly-CSharp.dll</HintPath>
+    </Reference>
+    <Reference Include="UnboundCards">
+      <HintPath>..\Assemblies\UnboundCards.dll</HintPath>
+    </Reference>
+    <Reference Include="UnboundGamemodes">
+      <HintPath>..\Assemblies\UnboundGamemodes.dll</HintPath>
+    </Reference>
+    <Reference Include="UnboundLib">
+      <HintPath>..\Assemblies\UnboundLib.dll</HintPath>
+    </Reference>
+    <Reference Include="UnboundNetworking">
+      <HintPath>..\Assemblies\UnboundNetworking.dll</HintPath>
+    </Reference>
+    <Reference Include="UnboundPatches">
+      <HintPath>..\Assemblies\UnboundPatches.dll</HintPath>
     </Reference>
     <Reference Include="Assembly-CSharp">
       <HintPath>$(RoundsFolder)\Rounds_Data\Managed\Assembly-CSharp.dll</HintPath>
